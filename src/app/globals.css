@@ -1,26 +1,104 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #07b9b3;
+  --color-primary-dark: #059c97;
+  --color-secondary: #20b37a;
+  --color-secondary-dark: #199464;
+  --color-brand-teal: #07b9b3;
+  --color-brand-green: #20b37a;
+  --color-accent: #20b37a;
+  --color-accent-dark: #199464;
+  --color-dark: #0f172a;
+  --color-dark-light: #1e293b;
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Force class-based dark mode so system dark mode settings do not trigger dark theme automatically */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom animations & utilities */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glassmorphism {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Button Gradient with Smooth Hover Transition to Solid Brand Color */
+.btn-brand-gradient {
+  position: relative;
+  background-image: linear-gradient(135deg, #07b9b3 0%, #20b37a 100%);
+  color: #ffffff;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.35s ease, box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-brand-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #07b9b3;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-brand-gradient:hover::before {
+  opacity: 1;
+}
+
+.btn-brand-gradient-green {
+  position: relative;
+  background-image: linear-gradient(135deg, #07b9b3 0%, #20b37a 100%);
+  color: #ffffff;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.35s ease, box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-brand-gradient-green::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #20b37a;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-brand-gradient-green:hover::before {
+  opacity: 1;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
