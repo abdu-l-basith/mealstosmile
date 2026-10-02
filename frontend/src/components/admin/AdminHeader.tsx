@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { INITIAL_ACTIVITIES } from "@/data/adminMockData";
+import { INITIAL_ACTIVITIES, AdminActivity } from "@/data/adminMockData";
 import {
   Menu,
   Bell,
@@ -27,6 +27,24 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activities, setActivities] = useState<AdminActivity[]>([]);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch("/api/admin/activities", { cache: "no-store" });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.activities)) {
+          setActivities(data.activities);
+        }
+      } catch (err) {
+        // Fallback to initial
+      }
+    };
+    fetchActivities();
+    const interval = setInterval(fetchActivities, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getPageTitle = () => {
     if (pathname.startsWith("/admin/payments")) return "Payments & Transactions";
@@ -116,26 +134,33 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
               </div>
 
               <div className="space-y-3 max-h-72 overflow-y-auto no-scrollbar">
-                {INITIAL_ACTIVITIES.slice(0, 4).map((act) => (
-                  <div
-                    key={act.id}
-                    className="p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 transition-colors flex items-start gap-3 text-xs"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-teal-400 mt-1.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-slate-200 truncate">
-                        {act.title}
-                      </p>
-                      <p className="text-slate-400 text-[11px] line-clamp-1">
-                        {act.description}
-                      </p>
-                      <span className="text-[10px] text-slate-400 mt-1 block font-mono">
-                        {act.timestamp}
-                      </span>
-                    </div>
+                {activities.length === 0 ? (
+                  <div className="py-6 text-center text-slate-400 text-xs">
+                    No new notifications
                   </div>
-                ))}
+                ) : (
+                  activities.slice(0, 5).map((act) => (
+                    <div
+                      key={act.id}
+                      className="p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 transition-colors flex items-start gap-3 text-xs"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-teal-400 mt-1.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-slate-200 truncate">
+                          {act.title}
+                        </p>
+                        <p className="text-slate-400 text-[11px] line-clamp-1">
+                          {act.description}
+                        </p>
+                        <span className="text-[10px] text-slate-400 mt-1 block font-mono">
+                          {act.timestamp}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
+
             </div>
           )}
         </div>
