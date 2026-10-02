@@ -142,7 +142,15 @@ export default function Footer() {
 
         {/* Divider */}
         <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>&copy; {new Date().getFullYear()} Meal to Smile. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <p>&copy; {new Date().getFullYear()} Meal to Smile. All rights reserved.</p>
+            <Link
+              href="/admin"
+              className="text-slate-400 hover:text-primary transition-colors font-medium hover:underline"
+            >
+              Admin Portal
+            </Link>
+          </div>
           <p className="flex items-center gap-1.5">
             <span>Made by</span>
             <motion.span

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ContributeProvider } from "@/context/ContributeContext";
+import { AuthProvider } from "@/context/AuthContext";
 import ContributeModal from "@/components/ContributeModal";
 
 const geistSans = Geist({
@@ -31,10 +32,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} scroll-smooth`}
     >
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col">
-        <ContributeProvider>
-          {children}
-          <ContributeModal />
-        </ContributeProvider>
+        <AuthProvider>
+          <ContributeProvider>
+            {children}
+            <ContributeModal />
+          </ContributeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

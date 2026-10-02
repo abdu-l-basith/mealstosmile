@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sacred National - Meal to Smile (Fullstack Project)
 
-## Getting Started
+A fullstack web application for **Sacred National - Meal to Smile** featuring a **Next.js frontend** and an **Express.js + TypeScript backend** with **Firebase Firestore** and **Nodemailer**.
 
-First, run the development server:
+---
+
+## 📁 Project Architecture
+
+```
+sacrednat/
+├── frontend/                 # Next.js Frontend Application
+│   ├── src/
+│   │   ├── app/              # Next.js App Router (pages & layouts)
+│   │   ├── components/       # UI Components (Navbar, Hero, ContributeForm, etc.)
+│   │   ├── context/          # React Contexts
+│   │   └── data/             # Static datasets & project details
+│   ├── public/               # Static assets & images
+│   ├── next.config.ts        # Next.js config with API proxy rewrites
+│   └── package.json          # Frontend dependencies
+│
+├── backend/                  # Node.js Express.js API Server
+│   ├── src/
+│   │   ├── config/           # Firebase Admin, Nodemailer & Env configs
+│   │   ├── controllers/      # API Controllers (Contribute, Projects, Health)
+│   │   ├── middlewares/      # Error handler, 404, Zod validator
+│   │   ├── routes/           # Express Route definitions
+│   │   ├── services/         # Firestore DB service & Email service
+│   │   ├── types/            # TypeScript interfaces & types
+│   │   ├── app.ts            # Express app configuration
+│   │   └── server.ts         # Server entry point
+│   ├── .env.example          # Backend environment variables template
+│   ├── .env                  # Local backend environment config
+│   ├── tsconfig.json         # Backend TypeScript config
+│   └── package.json          # Backend dependencies
+│
+├── package.json              # Monorepo Workspace root scripts
+└── README.md
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+
+Install all dependencies across the workspace (root, frontend, backend):
+
+```bash
+npm run install:all
+```
+
+Or install individually:
+```bash
+# Frontend
+cd frontend && npm install
+
+# Backend
+cd backend && npm install
+```
+
+### 2. Configure Backend Environment
+
+Copy `.env.example` to `.env` inside `backend/`:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Configure your Firebase credentials and SMTP settings in `backend/.env`.
+
+### 3. Run Development Servers
+
+Run both the frontend (Port 3000) and backend (Port 5000) simultaneously with one command from the project root:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Or run them individually:
+```bash
+# Run only Backend (http://localhost:5000)
+npm run dev:backend
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Run only Frontend (http://localhost:3000)
+npm run dev:frontend
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📡 Backend API Endpoints
 
-To learn more about Next.js, take a look at the following resources:
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/health` | Service health status & Firestore connectivity |
+| `POST` | `/api/contribute` | Submit contribution / support form (saves to Firestore & sends email) |
+| `GET` | `/api/contribute` | List contribution inquiries (admin) |
+| `GET` | `/api/contribute/:id` | Get specific contribution details |
+| `PATCH` | `/api/contribute/:id/status` | Update inquiry status (`pending`, `contacted`, `completed`, `archived`) |
+| `GET` | `/api/projects` | List all charity projects |
+| `GET` | `/api/projects/:slug` | Get project detail by slug |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Build for Production
 
-## Deploy on Vercel
+```bash
+# Build both frontend and backend
+npm run build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Start both in production mode
+npm start
+```
