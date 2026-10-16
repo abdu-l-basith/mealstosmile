@@ -6,6 +6,7 @@ export interface ContributeOptions {
   cause?: string;
   amount?: string;
   source?: string;
+  projectSlug?: string;
 }
 
 interface ContributeContextType {
@@ -22,13 +23,15 @@ export function ContributeProvider({ children }: { children: ReactNode }) {
   const [options, setOptions] = useState<ContributeOptions>({
     cause: "General Contribution",
     amount: "",
+    projectSlug: "",
   });
 
   const openContribute = (newOptions?: ContributeOptions) => {
-    const opts = {
+    const opts: ContributeOptions = {
       cause: newOptions?.cause || "General Contribution",
       amount: newOptions?.amount || "",
       source: newOptions?.source || "Website",
+      projectSlug: newOptions?.projectSlug || "",
     };
 
     if (typeof window !== "undefined") {
@@ -39,6 +42,7 @@ export function ContributeProvider({ children }: { children: ReactNode }) {
         if (opts.cause) params.set("cause", opts.cause);
         if (opts.amount) params.set("amount", opts.amount);
         if (opts.source) params.set("source", opts.source);
+        if (opts.projectSlug) params.set("projectSlug", opts.projectSlug);
         const url = `/contribute?${params.toString()}`;
         window.open(url, "_blank");
         return;

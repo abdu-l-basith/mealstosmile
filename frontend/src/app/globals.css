@@ -102,3 +102,69 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Modern Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #07b9b3;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #20b37a;
+}
+
+/* Modern Scrollbar Utility */
+.modern-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(7, 185, 179, 0.4) transparent;
+}
+
+.modern-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.modern-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 12px 0;
+}
+
+.modern-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(7, 185, 179, 0.35);
+  border-radius: 9999px;
+  transition: background-color 0.25s ease;
+}
+
+.modern-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #07b9b3;
+}
+
+.dark .modern-scrollbar {
+  scrollbar-color: rgba(32, 179, 122, 0.45) transparent;
+}
+
+.dark .modern-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(32, 179, 122, 0.4);
+}
+
+.dark .modern-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #20b37a;
+}

@@ -8,6 +8,13 @@ import ContributeForm from "./ContributeForm";
 
 export default function ContributeModal() {
   const { isOpen, options, closeContribute } = useContribute();
+  const isMealsProject =
+    options.projectSlug === "meals-to-smile" ||
+    Boolean(
+      options.cause &&
+        (options.cause.toLowerCase().includes("meal") ||
+          options.cause.toLowerCase().includes("gift a smile"))
+    );
 
   // Close on Escape key
   useEffect(() => {
@@ -52,7 +59,7 @@ export default function ContributeModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 20 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-lg bg-white dark:bg-dark rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 dark:border-slate-800 z-10 my-auto max-h-[90vh] overflow-y-auto"
+            className={`relative w-full ${isMealsProject ? "max-w-xl" : "max-w-lg"} bg-white dark:bg-dark rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 dark:border-slate-800 z-10 my-auto max-h-[90vh] overflow-y-auto modern-scrollbar`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -66,12 +73,12 @@ export default function ContributeModal() {
 
             {/* Modal Header */}
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md shrink-0">
                 <HeartHandshake className="w-6 h-6" />
               </div>
               <div>
                 <span className="text-[11px] font-bold tracking-widest uppercase text-secondary">
-                  Meal to Smile
+                  {options.cause || "Meal to Smile"}
                 </span>
                 <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
                   Contribute & Sponsor
@@ -83,6 +90,7 @@ export default function ContributeModal() {
             <ContributeForm
               initialCause={options.cause}
               initialAmount={options.amount}
+              projectSlug={options.projectSlug}
               onSuccess={closeContribute}
               isModal={true}
             />
