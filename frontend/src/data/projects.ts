@@ -66,9 +66,36 @@ export const PROJECTS: Project[] = [
       "Fostering human dignity, solidarity, and hope through grassroots care",
     ],
     supportTiers: [
-      { title: "Feed 10 Individuals", amount: "500", desc: "Provides fresh, wholesome meals to 10 needy people in rural villages." },
-      { title: "Sponsor 50 Meals", amount: "2500", desc: "Supports a full day village food distribution drive." },
-      { title: "Village Meal Drive", amount: "5000", desc: "Supplies nutritious meals to 100+ impoverished villagers." },
+      {
+        title: "Feed 20 Children",
+        amount: "2000",
+        desc: "Provides wholesome, nutritious hot meals to 20 needy children.",
+      },
+      {
+        title: "Feed 50 Children",
+        amount: "4000",
+        desc: "Supplies warm, freshly prepared meals to 50 rural children.",
+      },
+      {
+        title: "Feed 75 Children",
+        amount: "6000",
+        desc: "Supports a wholesome school and village meal drive for 75 children.",
+      },
+      {
+        title: "Feed 100 Children",
+        amount: "8000",
+        desc: "Powers a community hunger relief initiative feeding 100 children.",
+      },
+      {
+        title: "Feed 200 Children",
+        amount: "16000",
+        desc: "Sponsors comprehensive nutritious meals across villages for 200 children.",
+      },
+      {
+        title: "Feed 500 Children",
+        amount: "40000",
+        desc: "Enables a large-scale hunger relief distribution drive feeding 500 children.",
+      },
     ],
   },
   {

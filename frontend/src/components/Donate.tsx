@@ -13,6 +13,7 @@ const DONATE_CARDS = [
     description: "Sponsor a nutritious meal to any impoverished village in North India.",
     suggestedAmount: "2,000",
     buttonText: "Sponsor Meals",
+    projectSlug: "meals-to-smile",
   },
   {
     id: "well",
@@ -21,6 +22,7 @@ const DONATE_CARDS = [
     description: "Gift a tubewell or water purification unit to ensure clean, disease-free drinking water.",
     suggestedAmount: "10,000",
     buttonText: "Gift a Well",
+    projectSlug: "grant-a-drop",
   },
   {
     id: "ration",
@@ -29,6 +31,7 @@ const DONATE_CARDS = [
     description: "Donate to our Ration of Love program and support struggling families with monthly kits.",
     suggestedAmount: "3,500",
     buttonText: "Donate Ration",
+    projectSlug: "ration-of-love",
   },
   {
     id: "land",
@@ -37,6 +40,7 @@ const DONATE_CARDS = [
     description: "Contribute to building or buying new spaces for our learning centers and campuses.",
     suggestedAmount: "25,000",
     buttonText: "Contribute to Land",
+    projectSlug: "community-learning-centers",
   },
 ];
 
@@ -69,9 +73,12 @@ export default function Donate() {
 
   const handleCardClick = (card: typeof DONATE_CARDS[0]) => {
     setSelectedCard(card.id);
+    const isMeal = card.id === "meal";
     openContribute({
-      cause: `${card.title} (${card.buttonText})`,
-      amount: card.suggestedAmount,
+      cause: isMeal ? "Meals to Smile (Sponsor Meals)" : `${card.title} (${card.buttonText})`,
+      projectSlug: isMeal ? "meals-to-smile" : card.projectSlug,
+      amount: isMeal ? "" : card.suggestedAmount,
+      source: `Home Donate (${card.buttonText})`,
     });
   };
 
@@ -165,6 +172,11 @@ export default function Donate() {
                 {/* Suggested Amount & CTA */}
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-3">
                   <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCardClick(card);
+                    }}
                     className={`btn-brand-gradient flex items-center justify-center gap-2 w-full py-3 rounded-full font-bold text-xs sm:text-sm shadow-sm hover:shadow-md cursor-pointer ${
                       isSelected ? "ring-2 ring-primary ring-offset-2" : ""
                     }`}

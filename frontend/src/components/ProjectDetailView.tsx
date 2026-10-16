@@ -23,6 +23,8 @@ import {
   Calendar,
   Share2,
   Check,
+  Phone,
+  Mail,
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { Project, PROJECTS } from "@/data/projects";
@@ -126,7 +128,8 @@ export default function ProjectDetailView({ project }: ProjectDetailViewProps) {
               onClick={() =>
                 openContribute({
                   cause: project.title,
-                  source: `Project Page (${project.title})`,
+                  projectSlug: project.slug,
+                  source: `Project Header (${project.title})`,
                 })
               }
               className="btn-brand-gradient flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold shadow-sm hover:shadow-md cursor-pointer"
@@ -176,6 +179,7 @@ export default function ProjectDetailView({ project }: ProjectDetailViewProps) {
                 onClick={() =>
                   openContribute({
                     cause: project.title,
+                    projectSlug: project.slug,
                     source: `Hero CTA (${project.title})`,
                   })
                 }
@@ -457,19 +461,20 @@ export default function ProjectDetailView({ project }: ProjectDetailViewProps) {
 
             </motion.div>
 
-            {/* Right Column: Sticky Donation Card & Support Tiers */}
+            {/* Right Column: Sticky Contribution Sidebar */}
             <motion.aside
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeIn}
-              className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-24"
+              className="lg:col-span-4 flex flex-col lg:sticky lg:top-24"
             >
-              {/* Primary Donation Card */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-slate-800 shadow-xl flex flex-col gap-6">
+              {/* Contribution Card */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-100 dark:border-slate-800 shadow-xl flex flex-col gap-5">
                 
+                {/* Header */}
                 <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md shrink-0">
                     <HeartHandshake className="w-6 h-6" />
                   </div>
                   <div>
@@ -482,76 +487,53 @@ export default function ProjectDetailView({ project }: ProjectDetailViewProps) {
                   </div>
                 </div>
 
+                {/* Small Description */}
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   Your generous sponsorship empowers direct grassroots operations for <strong>{project.title}</strong>, transforming lives in remote villages.
                 </p>
 
-                {/* Preset Sponsorship Tiers */}
-                {project.supportTiers && project.supportTiers.length > 0 && (
-                  <div className="flex flex-col gap-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Select a Giving Tier:
-                    </span>
-                    {project.supportTiers.map((tier, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() =>
-                          openContribute({
-                            cause: project.title,
-                            amount: tier.amount,
-                            source: `Tier: ${tier.title}`,
-                          })
-                        }
-                        className="text-left p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50/50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-750 hover:border-secondary transition-all cursor-pointer group"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-secondary transition-colors">
-                            {tier.title}
-                          </span>
-                          <span className="text-xs font-extrabold text-primary px-2 py-0.5 rounded-md bg-primary/10">
-                            ₹{Number(tier.amount).toLocaleString("en-IN")}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">
-                          {tier.desc}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Custom Amount Button */}
+                {/* Button for Online Payment */}
                 <button
                   onClick={() =>
                     openContribute({
                       cause: project.title,
-                      source: `Custom Amount (${project.title})`,
+                      projectSlug: project.slug,
+                      source: `Sidebar CTA (${project.title})`,
                     })
                   }
-                  className="btn-brand-gradient w-full py-3.5 rounded-2xl text-sm font-bold shadow-md hover:shadow-lg hover:shadow-primary/25 cursor-pointer flex items-center justify-center gap-2"
+                  className="btn-brand-gradient w-full py-3.5 rounded-2xl text-sm font-bold shadow-md hover:shadow-lg hover:shadow-primary/25 cursor-pointer flex items-center justify-center gap-2 transform hover:-translate-y-0.5 transition-all"
                 >
                   <Heart className="w-4 h-4 fill-white" />
-                  <span>Donate Any Custom Amount</span>
+                  <span>Make Online Payment</span>
                 </button>
 
-                {/* Trust Seal */}
-                <div className="pt-2 flex items-center justify-center gap-2 text-xs text-slate-400">
-                  <ShieldCheck className="w-4 h-4 text-secondary" />
-                  <span>100% Direct Grassroots Relief</span>
-                </div>
-              </div>
+                {/* Help & Support Lines Inside the Box */}
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      Need Help or Offline Support?
+                    </span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                      For bank transfer details, cheque contributions, or large institutional sponsorships:
+                    </p>
+                  </div>
 
-              {/* Quick Contact & Bank Assistance Callout */}
-              <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-md border border-slate-800 flex flex-col gap-3">
-                <span className="text-xs font-bold text-secondary uppercase tracking-widest">
-                  Need Help or Offline Support?
-                </span>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  For bank transfer details, Cheque contributions, or large institutional sponsorships, contact our team directly.
-                </p>
-                <div className="pt-2 border-t border-slate-800 text-xs font-medium text-slate-300 flex flex-col gap-1">
-                  <span>WhatsApp / Call: <strong>+91 9847356680</strong></span>
-                  <span>Email: <strong>sacrednational@majmau.com</strong></span>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-750 flex flex-col gap-2 text-xs">
+                    <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300">
+                      <Phone className="w-3.5 h-3.5 text-secondary shrink-0" />
+                      <span>WhatsApp / Call: <strong className="text-slate-900 dark:text-white">+91 9847356680</strong></span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300">
+                      <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>Email: <strong className="text-slate-900 dark:text-white">sacrednational@majmau.com</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trust Seal */}
+                <div className="pt-1 flex items-center justify-center gap-2 text-xs text-slate-400">
+                  <ShieldCheck className="w-4 h-4 text-secondary" />
+                  <span>100% Direct Grassroots Relief &bull; 80G Eligible</span>
                 </div>
               </div>
             </motion.aside>

@@ -9,6 +9,7 @@ interface PageProps {
     cause?: string;
     amount?: string;
     source?: string;
+    projectSlug?: string;
   }>;
 }
 
@@ -16,6 +17,7 @@ async function ContributeContent({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const cause = resolvedParams?.cause || "General Contribution";
   const amount = resolvedParams?.amount || "";
+  const projectSlug = resolvedParams?.projectSlug || "";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col justify-between">
@@ -42,7 +44,7 @@ async function ContributeContent({ searchParams }: PageProps) {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-grow py-8 sm:py-12 px-4 sm:px-6 max-w-xl mx-auto w-full">
+      <main className="flex-grow py-8 sm:py-12 px-4 sm:px-6 max-w-2xl mx-auto w-full">
         <div className="bg-white dark:bg-dark rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-6">
           
           {/* Card Header */}
@@ -59,13 +61,17 @@ async function ContributeContent({ searchParams }: PageProps) {
                 Contribute & Sponsor
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Fill the details below. Our executive will reach out to you shortly.
+                {cause}
               </p>
             </div>
           </div>
 
           {/* Form */}
-          <ContributeForm initialCause={cause} initialAmount={amount} />
+          <ContributeForm
+            initialCause={cause}
+            initialAmount={amount}
+            projectSlug={projectSlug}
+          />
 
           {/* Trust Banner */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-2 text-xs text-slate-400">

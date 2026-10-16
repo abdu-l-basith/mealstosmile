@@ -16,12 +16,66 @@ import {
   Check,
   Sparkles,
   Heart,
+  Utensils,
+  ArrowRight,
+  ChevronLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+export interface MealPackage {
+  id: string;
+  title: string;
+  children: number;
+  amount: string;
+  tag?: string;
+}
+
+export const MEALS_SUPPORT_PACKAGES: MealPackage[] = [
+  {
+    id: "feed-20",
+    title: "Feed 20 Children",
+    children: 20,
+    amount: "2000",
+  },
+  {
+    id: "feed-50",
+    title: "Feed 50 Children",
+    children: 50,
+    amount: "4000",
+    tag: "Popular",
+  },
+  {
+    id: "feed-75",
+    title: "Feed 75 Children",
+    children: 75,
+    amount: "6000",
+  },
+  {
+    id: "feed-100",
+    title: "Feed 100 Children",
+    children: 100,
+    amount: "8000",
+    tag: "Most Chosen",
+  },
+  {
+    id: "feed-200",
+    title: "Feed 200 Children",
+    children: 200,
+    amount: "16000",
+  },
+  {
+    id: "feed-500",
+    title: "Feed 500 Children",
+    children: 500,
+    amount: "40000",
+    tag: "High Impact",
+  },
+];
 
 interface ContributeFormProps {
   initialCause?: string;
   initialAmount?: string;
+  projectSlug?: string;
   onSuccess?: () => void;
   isModal?: boolean;
 }
@@ -61,9 +115,29 @@ const PRESET_AMOUNTS = ["500", "1000", "2500", "5000", "10000"];
 export default function ContributeForm({
   initialCause = "General Contribution",
   initialAmount = "",
+  projectSlug = "",
   onSuccess,
   isModal = false,
 }: ContributeFormProps) {
+  const isMealsProject = Boolean(
+    projectSlug === "meals-to-smile" ||
+      (initialCause &&
+        (initialCause.toLowerCase().includes("meal") ||
+          initialCause.toLowerCase().includes("gift a smile")))
+  );
+
+  const [step, setStep] = useState<"packages" | "form">(
+    initialAmount ? "form" : isMealsProject ? "packages" : "form"
+  );
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(() => {
+    if (initialAmount) {
+      const cleaned = initialAmount.replace(/[^0-9.]/g, "").trim();
+      const matched = MEALS_SUPPORT_PACKAGES.find((p) => p.amount === cleaned);
+      return matched ? matched.title : null;
+    }
+    return null;
+  });
+
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
@@ -79,8 +153,19 @@ export default function ContributeForm({
     if (initialAmount) {
       const cleaned = initialAmount.replace(/[^0-9.]/g, "").trim();
       setAmount(cleaned);
+      setStep("form");
+      const matched = MEALS_SUPPORT_PACKAGES.find((p) => p.amount === cleaned);
+      setSelectedPackage(matched ? matched.title : null);
+    } else if (isMealsProject) {
+      setStep("packages");
+      setAmount("");
+      setSelectedPackage(null);
+    } else {
+      setStep("form");
+      setAmount("");
+      setSelectedPackage(null);
     }
-  }, [initialAmount]);
+  }, [initialAmount, initialCause, isMealsProject]);
 
   // Pre-load script in background
   useEffect(() => {
@@ -114,8 +199,22 @@ export default function ContributeForm({
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSelectPackage = (pkg: MealPackage) => {
+    setAmount(pkg.amount);
+    setSelectedPackage(pkg.title);
+    setStep("form");
+    if (errors.amount) {
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.amount;
+        return copy;
+      });
+    }
+  };
+
   const handlePresetSelect = (preset: string) => {
     setAmount(preset);
+    setSelectedPackage(null);
     if (errors.amount) {
       setErrors((prev) => {
         const copy = { ...prev };
@@ -132,6 +231,10 @@ export default function ContributeForm({
     if (!validate()) return;
 
     setIsSubmitting(true);
+
+    const finalCause = selectedPackage
+      ? `${initialCause || "Meals to Smile"} (${selectedPackage})`
+      : initialCause || "General Contribution";
 
     try {
       // 1. Ensure Razorpay Checkout script is loaded
@@ -151,7 +254,7 @@ export default function ContributeForm({
           whatsapp: whatsapp.trim(),
           email: email.trim() || undefined,
           amount: amount.trim(),
-          cause: initialCause || "General Contribution",
+          cause: finalCause,
           message: message.trim() || undefined,
         }),
       });
@@ -169,7 +272,7 @@ export default function ContributeForm({
         amount: orderData.amount,
         currency: "INR",
         name: "Meal to Smile",
-        description: `Support: ${initialCause || "Sacred National Foundation"}`,
+        description: `Support: ${finalCause}`,
         image: "/footerlog.png",
         order_id: orderData.orderId.startsWith("order_") ? orderData.orderId : undefined,
         prefill: {
@@ -178,7 +281,7 @@ export default function ContributeForm({
           contact: whatsapp.trim(),
         },
         notes: {
-          cause: initialCause || "General Contribution",
+          cause: finalCause,
           donor_name: name.trim(),
         },
         theme: {
@@ -208,7 +311,7 @@ export default function ContributeForm({
                 whatsapp: whatsapp.trim(),
                 email: email.trim() || undefined,
                 amount: numericVal.toString(),
-                cause: initialCause || "General Contribution",
+                cause: finalCause,
                 message: message.trim() || undefined,
                 source: isModal ? "Modal Form" : "Direct Page",
               }),
@@ -229,7 +332,7 @@ export default function ContributeForm({
               receiptNumber: verifyData.receiptNumber || `REC-2026-${Math.floor(1000 + Math.random() * 9000)}`,
               amount: `₹ ${numericVal.toLocaleString("en-IN")}`,
               donorName: name.trim(),
-              cause: initialCause || "General Contribution",
+              cause: finalCause,
               date: new Date().toLocaleDateString("en-IN", {
                 day: "numeric",
                 month: "short",
@@ -292,156 +395,259 @@ export default function ContributeForm({
 
   return (
     <div className="w-full relative">
-      <form onSubmit={handlePayment} className="flex flex-col gap-4">
-        {apiError && (
-          <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl text-red-600 dark:text-red-400 text-xs flex items-start gap-2 animate-shake">
-            <X className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{apiError}</span>
-          </div>
-        )}
-
-        {/* Name Field */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-            Full Name <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <User className="w-4 h-4" />
+      {/* MEALS TO SMILE PREFORM STEP */}
+      {isMealsProject && step === "packages" ? (
+        <div className="flex flex-col gap-4">
+          <div className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-primary/10 text-primary border border-primary/20 mb-2">
+              <Utensils className="w-3.5 h-3.5" />
+              <span>Sponsor Nutritious Meals</span>
             </div>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
-              }}
-              placeholder="e.g. Rahul Sharma"
-              className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
-                errors.name
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-slate-200 dark:border-slate-700 focus:border-primary"
-              }`}
-            />
-          </div>
-          {errors.name && (
-            <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-          )}
-        </div>
-
-        {/* WhatsApp & Email (Optional) Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* WhatsApp Field */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-              WhatsApp Number <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <Phone className="w-4 h-4" />
-              </div>
-              <input
-                type="tel"
-                value={whatsapp}
-                onChange={(e) => {
-                  setWhatsapp(e.target.value);
-                  if (errors.whatsapp)
-                    setErrors((prev) => ({ ...prev, whatsapp: "" }));
-                }}
-                placeholder="e.g. +91 9847356680"
-                className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
-                  errors.whatsapp
-                    ? "border-red-400 focus:border-red-500"
-                    : "border-slate-200 dark:border-slate-700 focus:border-primary"
-                }`}
-              />
-            </div>
-            {errors.whatsapp && (
-              <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
-            )}
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              Select a Meal Sponsorship Package
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Choose how many children you wish to feed with wholesome, warm meals:
+            </p>
           </div>
 
-          {/* Email Field (Optional) */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-              Email Address <span className="text-slate-400 lowercase font-normal">(optional)</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <Mail className="w-4 h-4" />
-              </div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. name@example.com"
-                className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
-                  errors.email
-                    ? "border-red-400 focus:border-red-500"
-                    : "border-slate-200 dark:border-slate-700 focus:border-primary"
-                }`}
-              />
-            </div>
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
+          {/* 6 Minimal Packages Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {MEALS_SUPPORT_PACKAGES.map((pkg) => {
+              const isPkgSelected = selectedPackage === pkg.title;
+              return (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  onClick={() => handleSelectPackage(pkg)}
+                  className={`relative p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer group flex flex-col justify-between min-h-[88px] text-left ${
+                    isPkgSelected
+                      ? "bg-primary/10 dark:bg-primary/20 border-primary shadow-md ring-2 ring-primary/30"
+                      : "bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50/60 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-secondary hover:shadow-md"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                      {pkg.title}
+                    </span>
+                    {pkg.tag && (
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-secondary/15 text-secondary border border-secondary/30 uppercase tracking-wider shrink-0">
+                        {pkg.tag}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-baseline justify-between mt-2">
+                    <div className="text-xl sm:text-2xl font-black text-primary tracking-tight">
+                      ₹{parseInt(pkg.amount).toLocaleString("en-IN")}
+                    </div>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 font-medium flex items-center gap-1">
+                      Select <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </div>
 
-        {/* Amount Field (REQUIRED) */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Amount (INR) <span className="text-red-500">*</span>
-            </label>
-            <span className="text-[11px] text-teal-600 dark:text-teal-400 font-medium">
-              80G Tax Exemption Eligible
+          {/* Custom Amount Alternative */}
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Want to support with a custom amount?
             </span>
-          </div>
-
-          {/* Quick Preset Buttons */}
-          <div className="grid grid-cols-5 gap-1.5 mb-2">
-            {PRESET_AMOUNTS.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => handlePresetSelect(preset)}
-                className={`py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                  amount === preset
-                    ? "bg-primary text-white border-primary shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50"
-                }`}
-              >
-                ₹{parseInt(preset).toLocaleString("en-IN")}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
-              <IndianRupee className="w-4 h-4" />
-            </div>
-            <input
-              type="text"
-              required
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
-                if (errors.amount)
-                  setErrors((prev) => ({ ...prev, amount: "" }));
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPackage(null);
+                setAmount("");
+                setStep("form");
               }}
-              placeholder="Enter amount (e.g. 2500)"
-              className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
-                errors.amount
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-slate-200 dark:border-slate-700 focus:border-primary"
-              }`}
-            />
+              className="text-xs font-bold text-primary hover:text-secondary hover:underline cursor-pointer"
+            >
+              Enter Custom Amount &rarr;
+            </button>
           </div>
-          {errors.amount && (
-            <p className="text-red-500 text-xs mt-1">{errors.amount}</p>
-          )}
         </div>
+      ) : (
+        /* PAYMENT FORM STEP */
+        <form onSubmit={handlePayment} className="flex flex-col gap-4">
+          {apiError && (
+            <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl text-red-600 dark:text-red-400 text-xs flex items-start gap-2 animate-shake">
+              <X className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{apiError}</span>
+            </div>
+          )}
+
+          {/* Meals to Smile Package Banner */}
+          {isMealsProject && (
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+                  <Utensils className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                    {selectedPackage ? "Chosen Feeding Package" : "Custom Donation"}
+                  </div>
+                  <div className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
+                    {selectedPackage || "Meals to Smile"} {amount ? `• ₹${Number(amount.replace(/[^0-9.]/g, "")).toLocaleString("en-IN")}` : ""}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep("packages")}
+                className="text-xs font-bold text-primary hover:text-secondary hover:underline cursor-pointer px-2 py-1 flex items-center gap-1 shrink-0"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>{selectedPackage ? "Change Package" : "Select Package"}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Name Field */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Full Name <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <User className="w-4 h-4" />
+              </div>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
+                }}
+                placeholder="e.g. Rahul Sharma"
+                className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
+                  errors.name
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-slate-200 dark:border-slate-700 focus:border-primary"
+                }`}
+              />
+            </div>
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+            )}
+          </div>
+
+          {/* WhatsApp & Email (Optional) Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* WhatsApp Field */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                WhatsApp Number <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <input
+                  type="tel"
+                  value={whatsapp}
+                  onChange={(e) => {
+                    setWhatsapp(e.target.value);
+                    if (errors.whatsapp)
+                      setErrors((prev) => ({ ...prev, whatsapp: "" }));
+                  }}
+                  placeholder="e.g. +91 9847356680"
+                  className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
+                    errors.whatsapp
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-slate-200 dark:border-slate-700 focus:border-primary"
+                  }`}
+                />
+              </div>
+              {errors.whatsapp && (
+                <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
+              )}
+            </div>
+
+            {/* Email Field (Optional) */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                Email Address <span className="text-slate-400 lowercase font-normal">(optional)</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. name@example.com"
+                  className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
+                    errors.email
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-slate-200 dark:border-slate-700 focus:border-primary"
+                  }`}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Amount Field (REQUIRED) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Amount (INR) <span className="text-red-500">*</span>
+              </label>
+              <span className="text-[11px] text-teal-600 dark:text-teal-400 font-medium">
+                80G Tax Exemption Eligible
+              </span>
+            </div>
+
+            {/* Quick Preset Buttons (Shown for non-meals projects) */}
+            {!isMealsProject && (
+              <div className="grid grid-cols-5 gap-1.5 mb-2">
+                {PRESET_AMOUNTS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => handlePresetSelect(preset)}
+                    className={`py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                      amount === preset
+                        ? "bg-primary text-white border-primary shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50"
+                    }`}
+                  >
+                    ₹{parseInt(preset).toLocaleString("en-IN")}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
+                <IndianRupee className="w-4 h-4" />
+              </div>
+              <input
+                type="text"
+                required
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  if (errors.amount)
+                    setErrors((prev) => ({ ...prev, amount: "" }));
+                }}
+                placeholder="Enter amount (e.g. 2500)"
+                className={`w-full bg-slate-50 dark:bg-dark-light border rounded-xl pl-10 pr-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
+                  errors.amount
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-slate-200 dark:border-slate-700 focus:border-primary"
+                }`}
+              />
+            </div>
+            {errors.amount && (
+              <p className="text-red-500 text-xs mt-1">{errors.amount}</p>
+            )}
+          </div>
 
         {/* Message Field (Optional) */}
         <div>
@@ -488,6 +694,7 @@ export default function ContributeForm({
           <span>Secured by <strong>Razorpay</strong> &bull; 256-bit SSL Encrypted</span>
         </div>
       </form>
+      )}
 
       {/* Payment Success Confirmation Modal */}
       <AnimatePresence>
